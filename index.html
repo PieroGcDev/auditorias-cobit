@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditorías de Ciberseguridad</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+<body>
+  <h1>📋 Registro de Auditorías - COBIT</h1>
+
+  <form id="auditForm">
+    <label>Nombre del Auditor:</label>
+    <input type="text" id="auditor" required>
+
+    <label>Proceso Evaluado (COBIT):</label>
+    <select id="process" required>
+      <option value="">-- Selecciona --</option>
+      <option value="APO13">APO13 - Gestión de la Seguridad</option>
+      <option value="BAI06">BAI06 - Gestión de Cambios</option>
+      <option value="DSS05">DSS05 - Gestión de Seguridad de Servicios</option>
+      <option value="MEA02">MEA02 - Monitorización del Sistema Interno</option>
+    </select>
+
+    <label>Controles Evaluados:</label>
+    <input type="number" id="controls" min="1" required>
+
+    <label>Controles Cumplidos:</label>
+    <input type="number" id="complied" min="0" required>
+
+    <button type="submit">Registrar Auditoría</button>
+  </form>
+
+  <h2>📊 KPIs de Auditoría</h2>
+  <div id="kpiResults"></div>
+
+  <h2>📁 Auditorías Registradas</h2>
+  <table id="auditTable">
+    <thead>
+      <tr>
+        <th>Auditor</th>
+        <th>Proceso</th>
+        <th>Controles</th>
+        <th>Cumplidos</th>
+        <th>% Cumplimiento</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="script.js"></script>
+</body>
+</html>
