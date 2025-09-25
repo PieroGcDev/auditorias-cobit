@@ -10,7 +10,7 @@
   <div class="max-w-6xl mx-auto p-6 space-y-6">
 
     <!-- Título principal -->
-    <h1 class="text-3xl font-bold text-blue-900 text-center mb-6">Auditoría de Ciberseguridad - CyberBank Perú</h1>
+    <h1 class="text-3xl font-bold text-gray-900 text-center mb-6">Auditoría de Ciberseguridad - CyberBank Perú</h1>
 
     <!-- Formulario Auditoría -->
     <div class="bg-white shadow-lg rounded-lg p-6">
@@ -38,31 +38,37 @@
     </div>
 
     <!-- Dashboard de Controles -->
-    <div class="bg-white shadow-lg rounded-lg p-6">
-      <h2 class="text-xl font-semibold text-blue-800 mb-4">Dashboard de Controles</h2>
-      <table class="w-full border border-gray-300">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="border p-2">Proceso</th>
-            <th class="border p-2">Control</th>
-            <th class="border p-2">Estado</th>
-            <th class="border p-2">Observaciones</th>
-            <th class="border p-2">Proceso Gráfico</th>
-          </tr>
-        </thead>
-        <tbody id="auditTable" class="bg-white"></tbody>
-      </table>
+<div class="bg-white shadow-lg rounded-lg p-6">
+  <h2 class="text-xl font-semibold text-blue-800 mb-4">Dashboard de Controles</h2>
 
-      <!-- Gráficos -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-        <div class="md:col-span-2 bg-white shadow rounded p-4">
-          <canvas id="barChart"></canvas>
-        </div>
-        <div class="bg-white shadow rounded p-4 flex justify-center">
-          <canvas id="pieChart" style="max-width: 250px;"></canvas>
-        </div>
-      </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-blue-600 text-white">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Proceso</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Control</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Estado</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Observaciones</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Proceso Gráfico</th>
+        </tr>
+      </thead>
+      <tbody id="auditTable" class="bg-white divide-y divide-gray-100">
+        <!-- Aquí va el contenido dinámico -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+    <div class="md:col-span-2 bg-white shadow rounded p-4">
+      <canvas id="barChart"></canvas>
     </div>
+    <div class="bg-white shadow rounded p-4 flex justify-center">
+      <canvas id="pieChart" style="max-width: 250px;"></canvas>
+    </div>
+  </div>
+</div>
+
     
     <!-- Botones -->
     <div class="col-span-1 md:col-span-2 flex justify-end gap-4">

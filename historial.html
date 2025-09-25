@@ -7,19 +7,22 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body class="bg-gray-100 p-6">
-  <h1 class="text-2xl font-bold mb-4">Historial de Auditorías</h1>
-  <table class="w-full border">
-    <thead>
-      <tr class="bg-gray-100">
-        <th class="border p-2">ID</th>
-        <th class="border p-2">Auditor</th>
-        <th class="border p-2">Fecha</th>
-        <th class="border p-2">Área</th>
-        <th class="border p-2">Observaciones</th>
-      </tr>
-    </thead>
-    <tbody id="historyTable"></tbody>
-  </table>
+  <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">📊 Historial de Auditorías</h1>
+
+  <div class="overflow-x-auto bg-white shadow-lg rounded-lg p-4">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-green-600 text-white">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">ID</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Auditor</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Fecha</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Área</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Observaciones</th>
+        </tr>
+      </thead>
+      <tbody id="historyTable" class="bg-white divide-y divide-gray-100"></tbody>
+    </table>
+  </div>
 
   <script>
     const { createClient } = supabase;
@@ -34,14 +37,15 @@
         return;
       }
       const historyTable = document.getElementById("historyTable");
-      data.forEach(auditoria => {
+      data.forEach((auditoria, index) => {
         const row = document.createElement("tr");
+        row.classList.add(index % 2 === 0 ? "bg-gray-50" : "bg-white", "hover:bg-gray-100");
         row.innerHTML = `
-          <td class="border p-2">${auditoria.id}</td>
-          <td class="border p-2">${auditoria.auditor}</td>
-          <td class="border p-2">${auditoria.fecha}</td>
-          <td class="border p-2">${auditoria.area}</td>
-          <td class="border p-2">${auditoria.observaciones || "Ninguna"}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${auditoria.id}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.auditor}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.fecha}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.area}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.observaciones || "Ninguna"}</td>
         `;
         historyTable.appendChild(row);
       });
