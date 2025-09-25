@@ -1,83 +1,180 @@
-// ⚡ Configura tu conexión
-const SUPABASE_URL = 'https://tphsoxsehnraatnodhay.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwaHNveHNlaG5yYWF0bm9kaGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMTcxMTMsImV4cCI6MjA3Mzc5MzExM30.KL4VYSgRvAFEJJILBn6oXafXI11sq4q4-TBfYsqCSuw';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// --- Controles definidos ---
+const controls = [
+  { proceso: "Gestión de accesos", control: "Revisión de accesos", estado: "No Cumplido", observaciones: "" },
+  { proceso: "Respaldos", control: "Pruebas de restauración", estado: "No Cumplido", observaciones: "" },
+  { proceso: "Parcheo", control: "Actualización de parches críticos", estado: "No Cumplido", observaciones: "" },
+  { proceso: "Incidentes", control: "Registro y análisis de incidentes", estado: "No Cumplido", observaciones: "" },
+  { proceso: "Capacitación", control: "Capacitación anual", estado: "No Cumplido", observaciones: "" },
+  { proceso: "Continuidad", control: "Prueba de plan de continuidad", estado: "No Cumplido", observaciones: "" },
+];
 
-const form = document.getElementById('auditForm');
-const tableBody = document.querySelector('#auditTable tbody');
-const kpiResults = document.getElementById('kpiResults');
+// Mapeo proceso -> imagen
+const diagrams = {
+  "Gestión de accesos": "img/accesos.drawio.png",
+  "Respaldos": "img/respaldo.drawio.png",
+  "Parcheo": "img/parcheo.drawio.png",
+  "Incidentes": "img/monitoreo.drawio.png",
+  "Capacitación": "img/capacitación.drawio.png",
+  "Continuidad": "img/continuidad.drawio.png",
+};
 
-// 📥 Al cargar, mostrar auditorías existentes
-document.addEventListener('DOMContentLoaded', loadAudits);
+function showDiagram(proceso) {
+  const modal = document.getElementById("diagramModal");
+  const title = document.getElementById("diagramTitle");
+  const image = document.getElementById("diagramImage");
 
-async function loadAudits() {
-  const { data, error } = await supabase.from('auditorias').select('*');
-  if (error) {
-    console.error('Error al cargar auditorías:', error);
-    return;
-  }
-  console.log('Datos recibidos de Supabase:', data); 
-  renderTable(data);
-  calculateKPIs(data);
+  title.textContent = `Diagrama: ${proceso}`;
+  image.src = diagrams[proceso] || "";
+  
+  modal.classList.remove("hidden");
 }
 
-// 📤 Al enviar formulario
-form.addEventListener('submit', async e => {
-  e.preventDefault();
+function closeDiagram() {
+  document.getElementById("diagramModal").classList.add("hidden");
+}
 
-  const auditor = document.getElementById('auditor').value;
-  const process = document.getElementById('process').value;
-  const controls = parseInt(document.getElementById('controls').value);
-  const complied = parseInt(document.getElementById('complied').value);
-  const compliance = ((complied / controls) * 100).toFixed(2);
 
-  const { data, error } = await supabase.from('auditorias').insert([
-    { auditor, process, controls, complied, compliance }
-  ]);
+// --- Información general de la auditoría ---
+let auditInfo = null;
 
-  if (error) {
-    alert('Error al guardar auditoría');
-    console.error(error);
-    return;
-  }
+// --- Renderizar tabla ---
+const tableBody = document.getElementById("auditTable");
 
-  form.reset();
-  loadAudits(); // recargar tabla
-});
+function renderTable() {
+  tableBody.innerHTML = "";
+  controls.forEach((c, index) => {
+    const row = document.createElement("tr");
 
-// 📋 Renderizar tabla
-function renderTable(audits) {
-  tableBody.innerHTML = '';
-  audits.forEach(a => {
-    const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${a.auditor}</td>
-      <td>${a.process}</td>
-      <td>${a.controls}</td>
-      <td>${a.complied}</td>
-      <td>${a.compliance}%</td>
+      <td class="border p-2">${c.proceso}</td>
+      <td class="border p-2">${c.control}</td>
+      <td class="border p-2">
+        <select onchange="updateStatus(${index}, this.value)" class="border rounded p-1">
+          <option value="Cumplido" ${c.estado === "Cumplido" ? "selected" : ""}>✔ Cumplido</option>
+          <option value="No Cumplido" ${c.estado === "No Cumplido" ? "selected" : ""}>❌ No Cumplido</option>
+        </select>
+      </td>
+      <td class="border p-2">
+        <input type="text" value="${c.observaciones}" 
+          oninput="updateNotes(${index}, this.value)" 
+          class="border rounded p-1 w-full" placeholder="Escribir...">
+      </td>
+      <td class="border p-2 text-center">
+        <button onclick="showDiagram('${c.proceso}')" 
+          class="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+          📊 Ver diagrama
+        </button>
+      </td>
     `;
+
     tableBody.appendChild(row);
+  });
+
+  updateCharts();
+}
+
+// --- Actualizar estado ---
+function updateStatus(index, value) {
+  controls[index].estado = value;
+  updateCharts();
+}
+
+// --- Actualizar observaciones ---
+function updateNotes(index, value) {
+  controls[index].observaciones = value;
+}
+
+// --- Gráficos ---
+const barCtx = document.getElementById("barChart").getContext("2d");
+const pieCtx = document.getElementById("pieChart").getContext("2d");
+
+let barChart, pieChart;
+
+function updateCharts() {
+  const cumplidos = controls.filter(c => c.estado === "Cumplido").length;
+  const noCumplidos = controls.length - cumplidos;
+
+  const procesos = controls.map(c => c.proceso);
+  const estados = controls.map(c => (c.estado === "Cumplido" ? 1 : 0));
+
+  if (barChart) barChart.destroy();
+  if (pieChart) pieChart.destroy();
+
+  barChart = new Chart(barCtx, {
+    type: "bar",
+    data: {
+      labels: procesos,
+      datasets: [{
+        label: "Cumplimiento (1 = Cumplido, 0 = No)",
+        data: estados,
+        backgroundColor: "#3b82f6"
+      }]
+    }
+  });
+
+  pieChart = new Chart(pieCtx, {
+    type: "pie",
+    data: {
+      labels: ["Cumplidos", "No Cumplidos"],
+      datasets: [{
+        data: [cumplidos, noCumplidos],
+        backgroundColor: ["#10b981", "#ef4444"]
+      }]
+    }
   });
 }
 
-// 📊 Calcular KPIs
-function calculateKPIs(audits) {
-  if (audits.length === 0) {
-    kpiResults.innerHTML = '<p>No hay datos registrados.</p>';
-    return;
+// --- Renderizar información general ---
+function renderGeneralInfo() {
+  let container = document.getElementById("generalInfo");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "generalInfo";
+    container.className = "bg-white shadow-md rounded-lg p-4 mb-6";
+    document.querySelector(".p-6").insertBefore(container, document.querySelector(".bg-white.shadow-md.rounded-lg.p-4.mb-6 + .bg-white"));
   }
 
-  const totalAudits = audits.length;
-  const avgCompliance = (
-    audits.reduce((sum, a) => sum + parseFloat(a.compliance), 0) / totalAudits
-  ).toFixed(2);
-
-  const failedAudits = audits.filter(a => a.compliance < 70).length;
-
-  kpiResults.innerHTML = `
-    <p>🔢 Total de auditorías: <strong>${totalAudits}</strong></p>
-    <p>📈 Promedio de cumplimiento: <strong>${avgCompliance}%</strong></p>
-    <p>⚠️ Auditorías con bajo cumplimiento (&lt;70%): <strong>${failedAudits}</strong></p>
-  `;
+  if (auditInfo) {
+    container.innerHTML = `
+      <h2 class="text-lg font-semibold mb-2">Resumen de la Auditoría</h2>
+      <p><strong>Auditor:</strong> ${auditInfo.auditor}</p>
+      <p><strong>Fecha:</strong> ${auditInfo.fecha}</p>
+      <p><strong>Área Auditada:</strong> ${auditInfo.area}</p>
+      <p><strong>Observaciones:</strong> ${auditInfo.observaciones || "Ninguna"}</p>
+    `;
+  }
 }
+
+// --- Manejo del formulario de información general ---
+const generalForm = document.getElementById("generalForm");
+generalForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  auditInfo = {
+    auditor: document.getElementById("auditor").value,
+    fecha: document.getElementById("date").value,
+    area: document.getElementById("area").value,
+    observaciones: document.getElementById("generalNotes").value,
+  };
+  renderGeneralInfo();
+  generalForm.reset();
+});
+
+// --- Inicializar ---
+renderTable();
+
+// --- Configuración de Supabase ---
+const { createClient } = supabase;
+const supabaseUrl = "https://tphsoxsehnraatnodhay.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwaHNveHNlaG5yYWF0bm9kaGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMTcxMTMsImV4cCI6MjA3Mzc5MzExM30.KL4VYSgRvAFEJJILBn6oXafXI11sq4q4-TBfYsqCSuw";
+const client = createClient(supabaseUrl, supabaseKey);
+
+async function cargarControles() {
+  const { data, error } = await client.from("controles").select("*");
+  if (error) {
+    console.error("Error cargando controles:", error);
+    return;
+  }
+  console.log("Controles desde la BD:", data);
+}
+
+cargarControles();
