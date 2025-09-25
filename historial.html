@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial de Auditorías</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <h1 class="text-2xl font-bold mb-4">Historial de Auditorías</h1>
+  <table class="w-full border">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="border p-2">ID</th>
+        <th class="border p-2">Auditor</th>
+        <th class="border p-2">Fecha</th>
+        <th class="border p-2">Área</th>
+        <th class="border p-2">Observaciones</th>
+      </tr>
+    </thead>
+    <tbody id="historyTable"></tbody>
+  </table>
+
+  <script>
+    const { createClient } = supabase;
+    const supabaseUrl = "https://tphsoxsehnraatnodhay.supabase.co";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwaHNveHNlaG5yYWF0bm9kaGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMTcxMTMsImV4cCI6MjA3Mzc5MzExM30.KL4VYSgRvAFEJJILBn6oXafXI11sq4q4-TBfYsqCSuw";
+    const client = createClient(supabaseUrl, supabaseKey);
+
+    async function cargarHistorial() {
+      const { data, error } = await client.from("auditoria_general").select("*").order("fecha", { ascending: false });
+      if (error) {
+        console.error("Error cargando historial:", error);
+        return;
+      }
+      const historyTable = document.getElementById("historyTable");
+      data.forEach(auditoria => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="border p-2">${auditoria.id}</td>
+          <td class="border p-2">${auditoria.auditor}</td>
+          <td class="border p-2">${auditoria.fecha}</td>
+          <td class="border p-2">${auditoria.area}</td>
+          <td class="border p-2">${auditoria.observaciones || "Ninguna"}</td>
+        `;
+        historyTable.appendChild(row);
+      });
+    }
+
+    cargarHistorial();
+  </script>
+</body>
+</html>
