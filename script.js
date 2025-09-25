@@ -109,6 +109,10 @@ document.getElementById("historyBtn").addEventListener("click", () => {
 
 // --- RENDER RESUMEN ---
 function renderSummary() {
+
+  const cumplidos = controls.filter(c => c.estado === "Cumplido").length;
+  const noCumplidos = controls.length - cumplidos;
+  
   const summaryContainer = document.getElementById("summarySection");
   summaryContainer.innerHTML = `
     <h2 class="text-lg font-semibold mb-2">Resumen de la Auditoría</h2>
@@ -116,6 +120,8 @@ function renderSummary() {
     <p><strong>Fecha:</strong> ${auditInfo.fecha}</p>
     <p><strong>Área Auditada:</strong> ${auditInfo.area}</p>
     <p><strong>Observaciones:</strong> ${auditInfo.observaciones || "Ninguna"}</p>
+    <p><strong>Controles Cumplidos:</strong> ${cumplidos}</p>
+    <p><strong>Controles No Cumplidos:</strong> ${noCumplidos}</p>
 
     <!-- Contenedor para gráficos -->
     <div class="grid grid-cols-3 gap-4 mt-4">
