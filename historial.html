@@ -5,6 +5,8 @@
   <title>Historial de Auditorías</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="script.js"></script>
+
 </head>
 <body class="bg-gray-100 p-6">
   <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">📊 Historial de Auditorías</h1>
@@ -18,38 +20,78 @@
           <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Fecha</th>
           <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Área</th>
           <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Observaciones</th>
+          <th class="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider">Ver controles</th>
         </tr>
       </thead>
       <tbody id="historyTable" class="bg-white divide-y divide-gray-100"></tbody>
     </table>
   </div>
 
-  <script>
-    const { createClient } = supabase;
-    const supabaseUrl = "https://tphsoxsehnraatnodhay.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRwaHNveHNlaG5yYWF0bm9kaGF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyMTcxMTMsImV4cCI6MjA3Mzc5MzExM30.KL4VYSgRvAFEJJILBn6oXafXI11sq4q4-TBfYsqCSuw";
-    const client = createClient(supabaseUrl, supabaseKey);
+  <div id="controlesModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 max-w-3xl w-full shadow-lg">
+    <button onclick="cerrarModalControles()" class="absolute top-2 right-4 text-gray-500 hover:text-gray-800 text-xl">✖</button>
+    <h2 class="text-xl font-semibold mb-4">Controles de Auditoría</h2>
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="px-6 py-3 text-left">proceso</th>
+          <th class="px-6 py-3 text-left">control</th>
+          <th class="px-6 py-3 text-left">estado</th>
+          <th class="px-6 py-3 text-left">observaciones</th>
+        </tr>
+      </thead>
+      <tbody id="controlesTable"></tbody>
+    </table>
+  </div>
+</div>
 
+
+  <script>
     async function cargarHistorial() {
-      const { data, error } = await client.from("auditoria_general").select("*").order("fecha", { ascending: false });
-      if (error) {
-        console.error("Error cargando historial:", error);
-        return;
-      }
-      const historyTable = document.getElementById("historyTable");
-      data.forEach((auditoria, index) => {
-        const row = document.createElement("tr");
-        row.classList.add(index % 2 === 0 ? "bg-gray-50" : "bg-white", "hover:bg-gray-100");
-        row.innerHTML = `
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${auditoria.id}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.auditor}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.fecha}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.area}</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.observaciones || "Ninguna"}</td>
-        `;
-        historyTable.appendChild(row);
-      });
-    }
+        const { data, error } = await client
+            .from("auditoria_general")
+            .select("*")
+            .order("fecha", { ascending: false });
+
+        if (error) {
+            console.error("Error cargando historial:", error);
+            return;
+        }
+
+        const historyTable = document.getElementById("historyTable");
+        historyTable.innerHTML = ""; // limpiar tabla
+
+        data.forEach((auditoria, index) => {
+            const row = document.createElement("tr");
+            row.classList.add(index % 2 === 0 ? "bg-gray-50" : "bg-white", "hover:bg-gray-100");
+
+            row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${auditoria.id}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.auditor}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.fecha}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.area}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${auditoria.observaciones || "Ninguna"}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm"></td>
+            `;
+
+            // Crear botón "Ver Controles"
+            const boton = document.createElement("button");
+            boton.textContent = "Ver Controles";
+            boton.classList.add(
+            "bg-blue-500",
+            "hover:bg-blue-600",
+            "text-white",
+            "px-3",
+            "py-1",
+            "rounded"
+            );
+
+            boton.addEventListener("click", () => verControles(auditoria.id));
+
+            row.querySelector("td:last-child").appendChild(boton);
+            historyTable.appendChild(row);
+        });
+        }
 
     cargarHistorial();
   </script>

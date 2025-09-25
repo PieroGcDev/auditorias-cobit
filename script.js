@@ -157,3 +157,43 @@ function renderCharts() {
 }
 
 renderTable();
+
+async function verControles(auditoriaId) {
+  console.log("Ver controles para auditoría:", auditoriaId);
+  const { data, error } = await client
+    .from("controles")
+    .select("*")
+    .eq("auditoria_id", auditoriaId);
+
+  if (error) {
+    console.error("Error cargando controles:", error);
+    return;
+  }
+
+  abrirModalControles(data);
+}
+
+
+function abrirModalControles(controles) {
+  const modal = document.getElementById("controlesModal");
+  const controlesTable = document.getElementById("controlesTable");
+
+  controlesTable.innerHTML = ""; // Limpiar tabla
+
+  controles.forEach(control => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+    <td class="px-6 py-4 text-sm text-gray-700">${control.proceso}</td>  
+    <td class="px-6 py-4 text-sm text-gray-700">${control.control}</td>
+      <td class="px-6 py-4 text-sm text-gray-700">${control.estado}</td>
+      <td class="px-6 py-4 text-sm text-gray-700">${control.observaciones || "Ninguna"}</td>
+    `;
+    controlesTable.appendChild(row);
+  });
+
+  modal.classList.remove("hidden");
+}
+
+function cerrarModalControles() {
+  document.getElementById("controlesModal").classList.add("hidden");
+}
